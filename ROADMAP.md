@@ -1,79 +1,111 @@
 # Kavro — Roadmap técnico
 
-O roadmap registra **prioridades e critérios de validação**, sem prometer datas ou anunciar funcionalidades como prontas. O projeto está em fase experimental.
+[← Voltar ao README](README.md)
 
-**Legenda:**
-- **Em desenvolvimento:** trabalho ativo ou protótipo em evolução; não implica validação integral.
-- **Pesquisa:** arquitetura e experimentos ainda sem escopo final consolidado.
-- **Planejado:** objetivo definido, implementação ainda não verificada.
+Este documento organiza **prioridades, dependências, entregas verificáveis e critérios de conclusão**. Não contém datas prometidas nem representa um anúncio de versão estável.
 
-> O repositório público contém atualmente documentação introdutória. Builds e fontes completos não estão publicados aqui; os itens abaixo descrevem objetivos e pesquisa, não recursos disponíveis para instalação.
+> **Estado público:** este repositório contém documentação e planejamento. Recursos descritos como protótipos experimentais não são releases públicas nem garantem disponibilidade ou funcionamento no ambiente do leitor.
 
-## P0 — Semântica, correção e confiabilidade
+## Visão geral
 
-**Situação: Em desenvolvimento · Prioridade máxima**
+| Prioridade | Frente | Estado | Próxima evidência necessária |
+| --- | --- | --- | --- |
+| **P0** | Semântica e confiabilidade | Em desenvolvimento | Regressões e conformidade da linguagem |
+| **P1** | Backend nativo x86-64 | Pesquisa e implementação experimental | Execução e ABI verificadas no Windows |
+| **P2** | Kavro Studio | Protótipos em desenvolvimento | Testes de edição e compilação no Windows |
+| **P3** | Programação de sistemas | Planejado | Modelo de memória e interoperabilidade especificados |
+| **P4** | Testes, documentação e distribuição | Em evolução | Pipeline reproduzível de pacotes e validação |
 
-- [ ] Definir regras formais para tipos, inferência, mutabilidade, parâmetros, retornos, coerções e erros.
-- [ ] Eliminar inconsistências entre checagem estática e execução, com casos de regressão para retornos de tipo desconhecido.
-- [ ] Estabelecer os comportamentos compartilhados entre a VM de testes e o backend nativo: inteiros, overflow, booleanos e erros.
-- [ ] Automatizar testes positivos, negativos e diferenciais; ampliar fuzzing quando houver infraestrutura adequada.
-- [ ] Documentar limites de segurança da VM, do compilador e dos executáveis gerados.
+**Como interpretar:** **Em desenvolvimento** significa trabalho ativo, não conclusão; **Pesquisa** significa alternativas em avaliação; **Planejado** não indica implementação disponível; **Validado** exige evidência reproduzível. Uma tarefa permanece desmarcada até que seus critérios estejam demonstrados na versão pertinente.
 
-**Critério de conclusão:** semântica documentada, suíte de regressão reproduzível e ausência de divergências conhecidas nos recursos declarados como suportados.
+## P0 — Semântica e confiabilidade
 
-## P1 — Backend nativo e desempenho
+**Objetivo:** tornar as garantias da linguagem explícitas e impedir que o compilador aceite programas que violem seu próprio sistema de tipos.
 
-**Situação: Pesquisa e desenvolvimento experimental**
+- [ ] Publicar a especificação de tipos primitivos, inferência, mutabilidade, escopo e retornos.
+- [ ] Definir as regras de `any` e de retorno sem anotação, eliminando aceitação indevida de tipos incompatíveis.
+- [ ] Formalizar conversões, overflow, comparação, valores booleanos e tratamento de erros.
+- [ ] Criar testes positivos e negativos com diagnósticos verificáveis (arquivo, linha e causa).
+- [ ] Executar testes de conformidade entre VM e binários nativos **somente** para recursos suportados pelos dois.
+- [ ] Ampliar a cobertura de regressão e estabelecer fuzzing instrumentado quando a infraestrutura estiver pronta.
 
-- [ ] Validar executáveis x86-64 no Windows real, incluindo convenções de chamada, saída, falhas e segurança do binário.
-- [ ] Evoluir a representação intermediária para etapas de compilação efetivas, com lowering e alocação de registradores.
-- [ ] Expandir o conjunto de operações e estruturas suportadas pelo backend nativo.
-- [ ] Avaliar uma ferramenta de compilação autocontida e a redução de dependências de runtime durante a compilação.
-- [ ] Executar benchmarks com programas equivalentes, ferramentas identificadas e metodologia reproduzível.
+**Critério de aceitação:** regras documentadas; regressões reproduzíveis; testes automatizados aprovados no escopo declarado; divergências conhecidas registradas e não anunciadas como resolvidas.
 
-**Critério de conclusão:** execução nativa demonstrada e documentada, testes de ABI e medições reproduzíveis sem extrapolações sobre desempenho.
+**Dependência:** é a base para estabilizar P1 e para diagnósticos corretos em P2.
+
+## P1 — Compilador nativo e desempenho
+
+**Objetivo:** produzir e verificar executáveis x86-64 sem confundir geração estrutural de PE32+ com execução funcional comprovada.
+
+- [ ] Executar programas representativos no Windows x64 e validar saída, código de retorno e comportamento de falhas.
+- [ ] Verificar calling convention, alinhamento de pilha, passagem de parâmetros e ABI.
+- [ ] Consolidar a representação intermediária executável e seu lowering para instruções nativas.
+- [ ] Implementar e testar estratégia de alocação de registradores, incluindo casos de pressão de registradores.
+- [ ] Expandir o subconjunto de linguagem suportado, preservando regras semânticas de P0.
+- [ ] Investigar compilação autocontida e redução da dependência de Node.js no processo de build.
+- [ ] Publicar benchmarks equivalentes e reproduzíveis, com ambiente, versões, comandos e resultados brutos.
+
+**Critério de aceitação:** executáveis realmente testados no sistema-alvo, ABI validada, regressões automatizadas e resultados de benchmark sem extrapolações.
+
+**Dependência:** P0 define o comportamento que o backend deve preservar; P4 fornece automação de distribuição e testes.
 
 ## P2 — Kavro Studio
 
-**Situação: Protótipos em desenvolvimento**
+**Objetivo:** oferecer uma experiência offline de edição e compilação confiável, sem sacrificar desempenho nem acessibilidade.
 
-- [ ] Validar abertura, edição, salvamento, abas, seleção, Unicode e undo/redo no Windows real.
-- [ ] Melhorar navegação, Explorer, diagnósticos e suporte a sugestões/autocompletar.
-- [ ] Verificar comportamento do editor com documentos grandes, redimensionamento e diferentes configurações de tela.
-- [ ] Implementar testes de integração e cenários fim a fim para as funções principais da IDE.
-- [ ] Refinar acessibilidade, organização visual e consistência de animações sem comprometer fluidez.
+- [ ] Testar a interface nativa no Windows: abertura, múltiplas abas, edição, salvar, fechar e confirmação de mudanças.
+- [ ] Validar Unicode, IME, seleção, teclado, caret, histórico de undo/redo e scroll.
+- [ ] Organizar Explorer, diagnósticos e navegação de símbolos; avaliar conclusão de código com base na semântica real.
+- [ ] Medir redimensionamento, consumo de recursos e comportamento com arquivos maiores.
+- [ ] Revisar contraste, foco, espaçamento, atalhos e consistência das animações Aqua.
+- [ ] Criar testes de integração e cenários end-to-end em Windows real.
 
-**Critério de conclusão:** fluxos de edição e compilação testados em ambiente Windows, com falhas conhecidas registradas e testes reexecutáveis.
+**Critério de aceitação:** fluxos principais executados e documentados no Windows, com bugs conhecidos e roteiro de reprodução; testes unitários e cross-compilation isolados não são suficientes.
 
-## P3 — Programação de sistemas
+**Dependência:** pode evoluir em paralelo a P1, mas diagnósticos semânticos e integração de compilação exigem interfaces estáveis com P0.
 
-**Situação: Planejado**
+## P3 — Recursos de programação de sistemas
 
-- [ ] Definir modelo de memória, ponteiros, tempo de vida e regras de segurança.
-- [ ] Projetar interoperabilidade com bibliotecas nativas e FFI com contratos bem definidos.
-- [ ] Avaliar Assembly inline, depuração e ferramentas de inspeção com regras explícitas.
-- [ ] Testar casos adversariais e limites de segurança de recursos de baixo nível.
+**Objetivo:** ampliar o controle de baixo nível sem deixar regras de segurança ou tempo de vida implícitas.
 
-**Critério de conclusão:** especificação pública dos comportamentos suportados e cobertura por testes de integração representativos.
+- [ ] Especificar representação e manipulação de memória, ponteiros, alocação e tempo de vida.
+- [ ] Definir interfaces de chamada e interoperabilidade com bibliotecas C/FFI.
+- [ ] Avaliar Assembly inline e seus contratos de registradores, memória e efeitos colaterais.
+- [ ] Planejar inspeção de binários, depuração e diagnósticos para recursos nativos.
+- [ ] Testar casos adversariais e comportamento nos limites definidos pela especificação.
 
-## P4 — Distribuição, testes e ecossistema
+**Critério de aceitação:** especificação implementável, testes representativos de integração e documentação explícita dos recursos ainda não suportados.
 
-**Situação: Em evolução**
+**Dependência:** ABI e semântica de P0/P1.
 
-- [ ] Automatizar builds reproduzíveis e verificações de integridade.
-- [ ] Padronizar cada pacote de avaliação com pasta `TESTE/`, instruções, amostras, roteiro e relatório de feedback sem dados pessoais obrigatórios.
-- [ ] Disponibilizar documentação e exemplos vinculados à versão correspondente.
-- [ ] Definir política de versões, compatibilidade, contribuições, licença e publicações.
-- [ ] Estabelecer critérios de release e validação em CI e no ambiente-alvo.
+## P4 — Testes, documentação e distribuição
 
-**Critério de conclusão:** distribuição auditável com documentação coerente, verificações automatizadas e critérios públicos de compatibilidade.
+**Objetivo:** garantir que cada artefato publicado corresponda exatamente ao que foi construído, testado e documentado.
 
-## Princípios de atualização
+- [ ] Automatizar builds, verificações de integridade e relatórios de versão reproduzíveis.
+- [ ] Padronizar pacotes de avaliação com uma pasta `TESTE/`, instruções, casos de teste e formulário de feedback técnico.
+- [ ] Separar pacote público de testes, código-fonte distribuível e documentação de continuidade restrita.
+- [ ] Documentar suporte por sistema, matriz de compatibilidade e limitações por versão.
+- [ ] Configurar CI para testes estáticos e validação no Windows, sem confundir CI com avaliação manual no alvo.
+- [ ] Definir licença, política de contribuição, versionamento e requisitos de release antes da divulgação de código.
 
-1. Um protótipo local não é uma funcionalidade estável nem uma release pública.
-2. Um item só deve ser marcado como concluído com evidências de teste adequadas ao que ele promete.
-3. Resultados de Linux, análise estática e cross-compilation não substituem execução real no Windows.
-4. Mudanças de sintaxe e arquitetura devem considerar compatibilidade, ergonomia, custo e alternativas.
-5. Documentação pública deve conter apenas informações técnicas necessárias, sem dados pessoais, documentos privados, segredos ou material confidencial.
+**Critério de aceitação:** pacote auditado e íntegro, testes identificados, limitações publicadas, arquivos públicos revisados e procedimento de reprodução claro.
 
-[Voltar ao README](README.md)
+**Dependência:** acompanha todas as fases; nenhuma entrega pública deve depender de documentação interna.
+
+## Ordem prática de execução
+
+1. **Primeiro:** fechar as garantias semânticas e as regressões prioritárias de P0.
+2. **Em paralelo:** validar o editor Windows (P2) e consolidar o empacotamento de testes (P4).
+3. **Depois:** avançar P1 com execução real e confirmação de ABI, usando a semântica estabilizada.
+4. **A seguir:** definir e implementar P3 por incrementos pequenos, cada um com teste de integração.
+5. **Continuamente:** atualizar documentação, riscos e estado de validação, sem transformar planos em funcionalidades prontas.
+
+## Política de atualização do roadmap
+
+- Uma caixa `[x]` exige evidência reproduzível ligada a uma versão identificada; não basta um protótipo ou compilação cruzada bem-sucedida.
+- **Teste local**, **CI**, **execução nativa** e **revisão visual** são evidências diferentes e devem ser descritas separadamente.
+- Mudanças significativas de sintaxe ou arquitetura devem apresentar alternativas, motivos, impactos e compatibilidade.
+- Nenhum detalhe pessoal, credencial, log sensível ou documento restrito faz parte da documentação pública.
+
+[← Voltar ao README](README.md)
